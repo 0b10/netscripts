@@ -1,5 +1,10 @@
 #!/bin/sh
 
-CWD=`dirname $0`;
-source "${CWD}/config.sh";
+function __dns_to_ipset() {
+  echo "${@}"
+  local arr=("$@")
+  for domain in "$@";
+    do echo domain;
+  done;
+}
 
