@@ -1,6 +1,6 @@
 #!/bin/sh
 
-function __do() {
+function __whitelist_dst_set() {
   [[ -z $1 ]] && echo "\$1 should be a chain name: WHITLIST-DST-\${1}" && return 1;
   [[ -z $2 ]] && echo "\$2 should be a set name - these are whitelisted, and allowed" && return 1;
 
@@ -14,6 +14,7 @@ function __do() {
   echo iptables -A $chain_name -j REJECT --reject-with icmp-port-unreachable;
 }
 
-__do "$@"
-
-unset __do
+if [[ ! -z $@ ]]; then
+  # if called directly
+  __whitelist_dst_set "$@"
+fi
