@@ -1,0 +1,14 @@
+[Unit]
+Description=Create IPSets from domain names - for use with netscripts
+
+[Service]
+Type=simple
+ExecStart=/opt/netscripts/netscripts-daemon.py
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,21 @@
+{
+  "limited_user": "user",
+  "devices": "/sys/class/net",
+  "dig_opts": {
+    "retries": 10,
+    "timeout": 3
+  },
+  "hosts": [
+    {
+      "name": "EXAMPLE",
+      "src": "10.137.0.1",
+      "domains": {
+        "whitelisted": {
+            "domain_names": ["example.com", "example.net"],
+            "ipset_name": "example-whitelisted"
+        }
+      }
+    }
+  ]
+}
+
