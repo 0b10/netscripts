@@ -17,11 +17,11 @@ function __set_vpn_rules() {
 
   # allow IRC dst hosts: $1:chain_name $2:ipset_name
   __whitelist_dst_set "WHITELIST-DST-IRC" "irc-whitelist";
-  echo iptables -I FORWARD -s $IRC_HOST_IP -j WHITELIST-DST-IRC;
+  echo iptables -I FORWARD -i vif+ -o tun+ -s $IRC_HOST_IP -j WHITELIST-DST-IRC;
 
   # allow Matrix dst hosts: $1:chain_name $2:ipset_name
   __whitelist_dst_set "WHITELIST-DST-MATRIX" "matrix-whitelist";
-  echo iptables -I FORWARD -s $MATRIX_HOST_IP -j WHITELIST-DST-MATRIX;
+  echo iptables -I FORWARD -i vif+ -o tun+ -s $MATRIX_HOST_IP -j WHITELIST-DST-MATRIX;
 
 }
 
