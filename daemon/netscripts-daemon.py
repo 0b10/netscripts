@@ -20,7 +20,7 @@ class NetscriptsException(Exception):
 
 with open('/etc/netscripts.json', 'r') as f:
     contents = loads(f.read())
-    Config.HOSTS = contents['hosts'] or []
+    Config.HOSTS = contents.get('hosts', None) or []
     Config.DEVICES = contents.get('devices', None) or '/sys/class/net'
     Config.LIMITED_USER = contents.get('limited_user', None) or 'user'
     Config.RETRIES = contents.get('dig_opts', None).get('retries', None) or 5
@@ -61,10 +61,10 @@ def resolve(hostnames):
 
 
 def ipset(name, ips):
-    call(['sudo', 'ipset', '-q', 'destroy', name])
-    check_call(['sudo', 'ipset', 'create', name, 'hash:net'])
+    call(['ipset', '-q', 'destroy', name])
+    check_call(['ipset', 'create', name, 'hash:net'])
     for ip in ips:
-        check_call(['sudo', 'ipset', 'add', name, '{}/32'.format(ip)])
+        check_call(['ipset', 'add', name, '{}/32'.format(ip)])
 
 
 def create_whitelist(host):
