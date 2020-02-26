@@ -24,10 +24,12 @@ install-scripts:
 	sudo mkdir -p ${install_dir}
 	sudo cp get-config.py reject-domain.sh reject-http.sh whitelist-dst-set.sh ${install_dir}
 	sudo chmod -R 770 ${install_dir}
+
+install-template: install-deps install-daemon install-scripts
+
+install-appvm:
 	sudo mkdir -p ${launcher_dir}
 	sudo cp set-vpn.sh ${launcher_script}
 	sudo chown root:root ${launcher_script}
 	sudo chmod 660 ${launcher_script}
 	sudo sed -i 's/dirname $$0/${install_dir_pattern}/' ${launcher_script}
-
-install: install-deps install-daemon install-scripts
