@@ -1,28 +1,21 @@
 #!/bin/sh
 
 function __set_vpn_rules() {
-  local CWD=`dirname $0`;
+  local cwd=`dirname $0`;
 
-  source "${CWD}/config.sh";
-  source "${CWD}/dns-to-ipset.sh";
-  source "${CWD}/whitelist-dst-set.sh";
+  source "${cwd}/whitelist-dst-set.sh";
+  config="${cwd}/get-config.py"
+  get_config="python3 ${cwd}/get-config.py"
 
-  [[ -z $IRC_HOST_IP ]] && echo "you must set IRC_HOST_IP first, via the config" && return 1;
-  [[ -z $MATRIX_HOST_IP ]] && echo "you must set MATRIX_HOST_IP first,  via the config" && return 1;
+  # whitelist dst hosts
+  names=`$get_config --get-names`;
+  for name in ${names[@]}; do
+    src=`$get_config --get-src $name`;
+    ipset_name=`$get_config --get-white-ipset $name`;
 
-  # for domain in "${IRC_WHITELIST_DOMAINS[@]}"; do
-    # echo $domain
-  # done
-  __dns_to_ipset "${IRC_WHITELIST_DOMAINS[@]}"
-
-  # allow IRC dst hosts: $1:chain_name $2:ipset_name
-  __whitelist_dst_set "WHITELIST-DST-IRC" "irc-whitelist";
-  echo iptables -I FORWARD -i vif+ -o tun+ -s $IRC_HOST_IP -j WHITELIST-DST-IRC;
-
-  # allow Matrix dst hosts: $1:chain_name $2:ipset_name
-  __whitelist_dst_set "WHITELIST-DST-MATRIX" "matrix-whitelist";
-  echo iptables -I FORWARD -i vif+ -o tun+ -s $MATRIX_HOST_IP -j WHITELIST-DST-MATRIX;
-
+    __whitelist_dst_set $name $ipset_name;  # $1:chain_name $2:ipset_name
+    echo iptables -I FORWARD -i vif+ -o tun+ -s $src -j $name;
+  done
 }
 
 __set_vpn_rules "$@";
