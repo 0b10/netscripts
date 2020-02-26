@@ -9,8 +9,11 @@ function __set_vpn_rules() {
   config="${cwd}/get-config.py"
   get_config="python3 ${cwd}/get-config.py"
 
-  echo iptables -I FORWARD -o tun+ -j REJECT-DOMAIN;
-  echo iptables -I FORWARD -o tun+ -j REJECT-HTTP;
+  # check rule doesn't exist first
+  for target in REJECT-DOMAIN REJECT-HTTP; do
+    rule="FORWARD -o tun+ -j $target";
+    iptables --check `echo $rule` || iptables -I `echo $rule`;
+  done
 
   # whitelist dst hosts
   names=`$get_config --get-names`;
@@ -18,8 +21,10 @@ function __set_vpn_rules() {
     src=`$get_config --get-src $name`;
     ipset_name=`$get_config --get-white-ipset $name`;
 
-    __whitelist_dst_set $name $ipset_name;  # $1:chain_name $2:ipset_name
-    echo iptables -I FORWARD -i vif+ -o tun+ -s $src -j $name;
+    chain_name="WL-$name-EGRESS"
+    __whitelist_dst_set $name $ipset_name $chain_name;  # $1:rule_name $2:ipset_name $3:chain_name
+    local rule="FORWARD -i vif+ -o tun+ -s $src -j $chain_name";
+    iptables --check `echo $rule` || iptables -I `echo $rule`
   done
 }
 

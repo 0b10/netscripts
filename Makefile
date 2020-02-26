@@ -18,7 +18,7 @@ install-daemon:
 	sudo systemctl enable netscripts.service
 
 install-deps:
-	sudo dnf install --assumeyes ipset bind-utils python3-inotify_simple jq
+	sudo dnf install --assumeyes ipset bind-utils python3-inotify_simple
 
 install-scripts:
 	sudo mkdir -p ${install_dir}

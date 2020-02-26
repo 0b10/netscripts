@@ -1,6 +1,8 @@
 #!/bin/sh
 
-echo iptables -N REJECT-HTTP
+TABLE_NAME="REJECT-HTTP";
 
-echo iptables -A REJECT-HTTP -p tcp --dport 80 -j LOG --log-prefix "[FORWARD:REJECT-HTTP]" --log-level 6;
-echo iptables -A REJECT-HTTP -p tcp --dport 80 -j REJECT --reject-with icmp-port-unreachable;
+iptables -N $TABLE_NAME || iptables -F $TABLE_NAME
+
+iptables -A $TABLE_NAME -p tcp --dport 80 -j LOG --log-prefix "[FORWARD:${TABLE_NAME}]" --log-level 6;
+iptables -A $TABLE_NAME -p tcp --dport 80 -j REJECT --reject-with icmp-port-unreachable;
