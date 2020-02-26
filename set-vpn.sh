@@ -4,8 +4,13 @@ function __set_vpn_rules() {
   local cwd=`dirname $0`;
 
   source "${cwd}/whitelist-dst-set.sh";
+  source "${cwd}/reject-domain.sh";
+  source "${cwd}/reject-http.sh";
   config="${cwd}/get-config.py"
   get_config="python3 ${cwd}/get-config.py"
+
+  echo iptables -I FORWARD -o tun+ -j REJECT-DOMAIN;
+  echo iptables -I FORWARD -o tun+ -j REJECT-HTTP;
 
   # whitelist dst hosts
   names=`$get_config --get-names`;
