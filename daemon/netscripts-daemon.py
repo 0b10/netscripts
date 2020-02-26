@@ -60,11 +60,12 @@ def resolve(hostnames):
     return result
 
 
-def ipset(name, ips):
+def ipset(name, ips=None):
     call(['ipset', '-q', 'destroy', name])
     check_call(['ipset', 'create', name, 'hash:net'])
-    for ip in ips:
-        check_call(['ipset', 'add', name, '{}/32'.format(ip)])
+    if ips:
+        for ip in ips:
+            check_call(['ipset', 'add', name, '{}/32'.format(ip)])
 
 
 def create_whitelist(host):
@@ -77,6 +78,14 @@ def create_sets():
     for host in Config.HOSTS:
         create_whitelist(host=host)
 
+
+def create_empty_sets():
+    for host in Config.HOSTS:
+        ipset_name = host['domains']['whitelisted']['ipset_name']
+        ipset(name=ipset_name)
+
+
+create_empty_sets()  # so that iptables rules have something to use
 
 inotify = INotify()
 watch_flags = flags.CREATE
