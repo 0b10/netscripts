@@ -34,4 +34,4 @@ install-appvm:
 	cp set-vpn.sh ${launcher_script}
 	chown root:root ${launcher_script}
 	chmod 660 ${launcher_script}
-	sed -i 's/dirname $$0/${install_dir_pattern}/' ${launcher_script}
+	sed -i 's/`dirname $$0`/\"${install_dir_pattern}\"/' ${launcher_script}
