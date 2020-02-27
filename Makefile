@@ -24,7 +24,7 @@ install-deps:
 
 install-scripts:
 	mkdir -p ${install_dir}
-	cp get-config.py reject-domain.sh reject-http.sh whitelist-dst-set.sh ${install_dir}
+	cp get-config.py reject-domain.sh reject-http.sh whitelist-dst-set.sh allow-local-resolver.sh ${install_dir}
 	chmod -R 770 ${install_dir}
 
 install-template: install-deps install-daemon install-scripts install-config
