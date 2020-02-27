@@ -37,4 +37,4 @@ __set_vpn_rules "$@";
 
 unset __whitelist_dst_set;
 unset __dns_to_ipset;
-unsed allow_local_resolver;
+unset allow_local_resolver;

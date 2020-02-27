@@ -1,6 +1,5 @@
 {
   "limited_user": "user",
-  "devices": "/sys/class/net",
   "dig_opts": {
     "retries": 10,
     "timeout": 3

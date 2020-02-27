@@ -20,7 +20,7 @@ install-daemon:
 	systemctl enable netscripts.service
 
 install-deps:
-	dnf install --assumeyes ipset bind-utils python3-inotify_simple python3-systemd
+	dnf install --assumeyes ipset bind-utils python3-pyudev python3-systemd
 
 install-scripts:
 	mkdir -p ${install_dir}
