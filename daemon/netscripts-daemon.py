@@ -19,6 +19,7 @@ class Config:
     LIMITED_USER = None
     RETRIES = None
     DIG_TIMEOUT = None
+    GLOBAL_EGRESS_IP_WL = []
 
 
 class NetscriptsException(Exception):
@@ -28,10 +29,32 @@ class NetscriptsException(Exception):
 try:
     with open('/etc/netscripts.json', 'r') as f:
         contents = loads(f.read())
-        Config.HOSTS = contents.get('hosts', None) or []
-        Config.LIMITED_USER = contents.get('limited_user', None) or 'user'
-        Config.RETRIES = contents.get('dig_opts', None).get('retries', None) or 5
-        Config.DIG_TIMEOUT = contents.get('dig_opts', None).get('timeout', None) or 3
+
+        Config.HOSTS = contents\
+            .get('hosts', [])
+
+        Config.GLOBAL_EGRESS_IP_WL = contents\
+            .get('global', {})\
+            .get('whitelisted', {})\
+            .get('egress', {})\
+            .get('host_addr', [])
+
+        Config.GLOBAL_EGRESS_IP_WL_IPSET_NAME = contents\
+            .get('global', {})\
+            .get('whitelisted', {})\
+            .get('egress', {})['ipset_name']
+
+        Config.LIMITED_USER = contents\
+            .get('limited_user', 'user')
+
+        Config.RETRIES = contents\
+            .get('dig_opts', {})\
+            .get('retries', 5)
+
+        Config.DIG_TIMEOUT = contents\
+            .get('dig_opts', {})\
+            .get('timeout', 3)
+
 except Exception as e:
     logger.error('Unable to open config file - exiting', exc_info=True, stack_info=True)
     raise e
@@ -146,24 +169,31 @@ class IPSet:
         self._logger.info("Ipset populated: %s", self._name)
 
 
-def create_whitelist(host, logger):
-    whitelisted = host['domains']['whitelisted']
+def create_egress_whitelist(host, logger):
+    whitelisted = host['whitelisted']['egress']
     ips = resolve(hostnames=whitelisted['domain_names'], logger=logger)
     IPSet(name=whitelisted['ipset_name'], logger=logger).create().add(ips=ips)
 
 
 def create_sets(logger):
     for host in Config.HOSTS:
-        create_whitelist(host=host, logger=logger)
+        create_egress_whitelist(host=host, logger=logger)
 
 
 def create_empty_sets(logger):
     for host in Config.HOSTS:
-        ipset_name = host['domains']['whitelisted']['ipset_name']
+        ipset_name = host['whitelisted']['egress']['ipset_name']
         IPSet(name=ipset_name, logger=logger).create()
 
 
+def create_static_sets(logger):
+    IPSet(name=Config.GLOBAL_EGRESS_IP_WL_IPSET_NAME, logger=logger)\
+        .create()\
+        .add(ips=Config.GLOBAL_EGRESS_IP_WL)
+
+
 create_empty_sets(logger=logger)  # so that iptables rules have something to use
+create_static_sets(logger=logger)
 
 context = Context()
 monitor = Monitor.from_netlink(context)

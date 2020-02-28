@@ -14,7 +14,7 @@ function __set_vpn_rules() {
   names=`$get_config --get-names`;
   for name in ${names[@]}; do
     src=`$get_config --get-src $name`;
-    ipset_name=`$get_config --get-white-ipset $name`;
+    ipset_name=`$get_config --get-white-egress-ipset $name`;
 
     chain_name="WL-$name-EGRESS"
     __whitelist_dst_set $name $ipset_name $chain_name;  # $1:rule_name $2:ipset_name $3:chain_name

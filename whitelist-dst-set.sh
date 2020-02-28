@@ -6,9 +6,13 @@ function __whitelist_dst_set() {
   [[ -z $3 ]] && echo "\$2 should be a chain name" && return 1;
 
   local chain_name=$3;
+  local config="${cwd}/get-config.py";
+  local global_ipset=`$get_config --get-global-white-egress-ipset-name`;
+
 
   iptables -N $chain_name || iptables -F $chain_name;
   iptables -A $chain_name -m set --match-set $2 dst -j ACCEPT;
+  iptables -A $chain_name -m set --match-set $global_ipset dst -j ACCEPT;
 
   # log and deny everything else
   iptables -A $chain_name -j LOG --log-prefix "[FORWARD:REJECT-${1}-EGRESS]" --log-level 6;

@@ -4,17 +4,24 @@
     "retries": 10,
     "timeout": 3
   },
+  "global": {
+    "whitelisted": {
+      "egress": {
+        "ipset_name": "global-container-egress-wl",
+        "host_addr": ["1.1.1.1", "8.8.8.8"]
+      }
+    }
+  },
   "hosts": [
     {
       "name": "EXAMPLE",
-      "src": "10.137.0.1",
-      "domains": {
-        "whitelisted": {
-            "domain_names": ["example.com", "example.net"],
-            "ipset_name": "example-whitelisted"
+      "src": "10.137.0.19",
+      "whitelisted": {
+        "egress": {
+          "ipset_name": "example-whitelisted",
+          "domain_names": ["example.com", "example.net"]
         }
       }
     }
   ]
 }
-
