@@ -7,19 +7,38 @@
   "global": {
     "whitelisted": {
       "egress": {
-        "ipset_name": "global-container-egress-wl",
-        "host_addr": ["1.1.1.1", "8.8.8.8"]
+	      "ipset_name": "global-container-egress-wl",
+        "host_addr": [
+          { "ip": "1.1.1.1", "dports": ["tcp:853"] },
+          { "ip": "8.8.8.8", "dports": ["tcp:853"] }
+        ]
       }
     }
   },
   "hosts": [
     {
       "name": "EXAMPLE",
-      "src": "10.137.0.19",
+      "src": "10.137.0.11",
       "whitelisted": {
-        "egress": {
-          "ipset_name": "example-whitelisted",
-          "domain_names": ["example.com", "example.net"]
+	    "egress": {
+          "ipset_name": "example-egress-wl",
+      	  "domain_names": [
+            { "name": "example.com", "dports": ["tcp:443"] },
+            { "name": "example.net", "dports": ["tcp:443"] }
+	        ]
+	      }
+      }
+    },
+    {
+      "name": "EXAMPLE2",
+      "src": "10.137.0.22",
+      "whitelisted": {
+	    "egress": {
+          "ipset_name": "example2-egress-wl",
+      	  "domain_names": [
+            { "name": "example.com", "dports": ["tcp:443"] },
+            { "name": "example.net", "dports": ["tcp:443"] }
+          ]
         }
       }
     }

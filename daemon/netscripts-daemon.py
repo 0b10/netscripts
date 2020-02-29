@@ -8,6 +8,12 @@ from logging import DEBUG, getLogger, StreamHandler
 from systemd.journal import JournalHandler
 from glob import glob
 
+# TODO: Refactor
+#   * two domain names can resolve to the same ip. ipset doesn't like duplicates.
+#   * a separate dns request has to be made to associate a dport with it's ip - perhaps there
+#       is an easier way - to batch them, and still retain the associated domain.
+#   * DNS requests should be made by a limited user, with no caps - a python lib might not suffice
+
 logger = getLogger()
 logger.addHandler(JournalHandler(SYSLOG_IDENTIFIER='netscripts-daemon'))
 logger.setLevel(DEBUG)
@@ -61,6 +67,8 @@ except Exception as e:
 
 
 def resolve(hostnames, logger):
+    assert isinstance(hostnames, list), "hostnames should be a list"
+
     user = ['su', Config.LIMITED_USER, '--command']
     result = []
     ips = []
@@ -118,7 +126,7 @@ class IPSet:
 
     def _create(self):
         return self._do(
-            command=['ipset', 'create', self._name, 'hash:net'],
+            command=['ipset', 'create', self._name, 'hash:net,port'],
             log_msg_success='Ipset created: {}'.format(self._name),
             log_msg_failure='Unable to create ipset: {}'.format(self._name)
         )
@@ -156,13 +164,18 @@ class IPSet:
         self._logger.error("Unable to create ipset: {}", self._name)
         raise Exception
 
-    def add(self, ips):
-        if ips:
-            for ip in ips:
+    def add(self, targets):  # targets: [{ ip: str, dport: str }]
+        if targets:
+            for target in targets:
+                ip = target['ip']
+                dport = target['dport']
+
                 added = self._do(
-                    ['ipset', 'add', self._name, '{}/32'.format(ip)],
-                    log_msg_success='Ip added to set: {}: {}'.format(self._name, ip),
-                    log_msg_failure='Unable to add ip to set: {}: {}'.format(self._name, ip)
+                    ['ipset', 'add', self._name, '{}/32,{}'.format(ip, dport)],
+                    log_msg_success='Ip added to set: {}: {},{}'.format(self._name, ip, dport),
+                    log_msg_failure='Unable to add ip to set: {}: {},{}'.format(
+                        self._name, ip, dport
+                    )
                 )
                 if not added:
                     raise Exception
@@ -171,8 +184,20 @@ class IPSet:
 
 def create_egress_whitelist(host, logger):
     whitelisted = host['whitelisted']['egress']
-    ips = resolve(hostnames=whitelisted['domain_names'], logger=logger)
-    IPSet(name=whitelisted['ipset_name'], logger=logger).create().add(ips=ips)
+    domain_names = whitelisted['domain_names']
+
+    targets = []
+    seen = set()
+    for domain in domain_names:  # domain: { name: str, dports: [list] }
+        ips = resolve(hostnames=[domain['name']], logger=logger)  # get all ips relative to domain
+        for ip in ips:  # each ip in the set must have a dport associated
+            if ip not in seen:  # don't allow duplicates, some names resolve to the same ip.
+                seen.add(ip)
+                for dport in domain['dports']:  # but there may be multiple dports
+                    targets.append({'ip': ip, 'dport': dport})
+
+    if targets:
+        IPSet(name=whitelisted['ipset_name'], logger=logger).create().add(targets=targets)
 
 
 def create_sets(logger):
@@ -187,9 +212,14 @@ def create_empty_sets(logger):
 
 
 def create_static_sets(logger):
+    targets = []
+    for host in Config.GLOBAL_EGRESS_IP_WL:
+        for dport in host['dports']:
+            targets.append({'ip': host['ip'], 'dport': dport })
+
     IPSet(name=Config.GLOBAL_EGRESS_IP_WL_IPSET_NAME, logger=logger)\
         .create()\
-        .add(ips=Config.GLOBAL_EGRESS_IP_WL)
+        .add(targets=targets)
 
 
 create_empty_sets(logger=logger)  # so that iptables rules have something to use

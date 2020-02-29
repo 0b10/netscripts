@@ -22,10 +22,6 @@ class Config:
             if host['name'] == name:
                 return host['whitelisted']['egress']['ipset_name']
 
-    def get_global_white_egress_ips(self):
-        result = self._config['global']['whitelisted']['egress']['host_addr']
-        return '\n'.join(result)
-
     def get_global_white_egress_ipset_name(self):
         return self._config['global']['whitelisted']['egress']['ipset_name']
 
@@ -37,8 +33,6 @@ exclusive.add_argument('--get-src', action='store', type=str,
                        help='get a src address, given the rule name')
 exclusive.add_argument('--get-white-egress-ipset', action='store', type=str,
                        help='get the ipset name for the relative whitelisted rules. Take a rule name as an arg')
-exclusive.add_argument('--get-global-white-egress-ips', action='store_true',
-                       help='get a list of egress ips that should be whitelisted for hosts')
 exclusive.add_argument('--get-global-white-egress-ipset-name', action='store_true',
                        help='get the name of the global egress whitelist ipset')
 
@@ -54,9 +48,6 @@ if args.get_src:
 
 if args.get_white_egress_ipset:
     print(conf.get_white_egress_ipset_name(name=args.get_white_egress_ipset))
-
-if args.get_global_white_egress_ips:
-    print(conf.get_global_white_egress_ips())
 
 if args.get_global_white_egress_ipset_name:
     print(conf.get_global_white_egress_ipset_name())
