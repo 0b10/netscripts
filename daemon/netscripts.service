@@ -1,12 +1,13 @@
 [Unit]
 Description=Create IPSets from domain names - for use with netscripts
+Before=qubes-firewall.service
+Required=qubes-firewall.service
 
 [Service]
 Type=simple
 ExecStart=/opt/netscripts/netscripts-daemon.py
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
-Restart=on-failure
 User=root
 Group=root
 
