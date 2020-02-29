@@ -11,8 +11,10 @@ function __whitelist_dst_set() {
 
 
   iptables -N $chain_name || iptables -F $chain_name;
-  iptables -A $chain_name -m set --match-set $2 dst -j ACCEPT;
-  iptables -A $chain_name -m set --match-set $global_ipset dst -j ACCEPT;
+
+  # the set is hash:ip,port
+  iptables -A $chain_name -m set --match-set $global_ipset dst,dst -j ACCEPT;
+  iptables -A $chain_name -m set --match-set $2 dst,dst -j ACCEPT;
 
   # log and deny everything else
   iptables -A $chain_name -j LOG --log-prefix "[FORWARD:REJECT-${1}-EGRESS]" --log-level 6;
